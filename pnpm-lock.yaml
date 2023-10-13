@@ -21,8 +21,8 @@ dependencies:
     specifier: 18.2.0
     version: 18.2.0
   supagraph:
-    specifier: 0.0.1-rc.31
-    version: 0.0.1-rc.31
+    specifier: 0.0.1-rc.36
+    version: 0.0.1-rc.36
 
 devDependencies:
   '@types/node':
@@ -1191,8 +1191,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /supagraph@0.0.1-rc.31:
-    resolution: {integrity: sha512-x/Lkj4vXjgux3aMGQBgXZfZcGcpmHgXSaq3YPKeBKGcsECkfmNtdeu0vN6OtmZ7llOaBKe+KgW9jIGWPuYaRRw==}
+  /supagraph@0.0.1-rc.36:
+    resolution: {integrity: sha512-PWgUZwIWACHAXdo5Mi6+nANxSq+0actb9CZcj2IiKLgAqq7W1Hx3IJddLXqCHAzkDyKjQlaoFeiHjqPnXWG+iA==}
     dependencies:
       '@graphql-yoga/render-graphiql': 3.8.1(graphql-yoga@3.8.1)
       csv-parser: 3.0.0
