@@ -20,19 +20,27 @@ import migrations from "@supagraph/migrations";
 export const dynamic = "force-dynamic";
 
 let cacheContractEntities = [];
+export const getCachedEntities = () => cacheContractEntities;
+export const pushToCachedEntities = (newItem) =>
+  cacheContractEntities.push(newItem);
 
-export const cacheEntities = async () => {
+const getContractFromDB = async () => {
   // get the engine to manipulate the db store
   const engine = await getEngine();
 
   // pull the full list of delegates - this will trigger a snapshot on the immutable table
-  cacheContractEntities = (await engine.db.get("contract")) || [];
+  const contracts = (await engine.db.get("contract")) || [];
 
-  // mark as warm (this will prevent
-  return cacheContractEntities;
+  cacheContractEntities = contracts.map((c) => c.id);
 };
 
-export const getCachedEntities = () => cacheContractEntities;
+export const cacheEntities = async () => {
+  if (!cacheContractEntities) {
+    await getContractFromDB();
+  }
+
+  return cacheContractEntities;
+};
 
 // construct the sync call
 const syncLogic = async () => {

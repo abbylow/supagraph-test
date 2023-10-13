@@ -5,10 +5,8 @@ import { Store } from "supagraph";
 import { Block, TransactionReceipt } from "@ethersproject/providers";
 
 // - These types will be generated based on the event signatures exported by the defined contracts in config (coming soon TM);
-import type {
-  NewPoolEvent,
-  ContractEntity,
-} from "../types";
+import type { NewPoolEvent, ContractEntity } from "../types";
+import { pushToCachedEntities } from "@app/graphql/sync/route";
 
 // Generic handler to consume TokensMigrated events
 export const IziswapFactoryHandler = async (
@@ -23,4 +21,7 @@ export const IziswapFactoryHandler = async (
 
   // save all changes
   await contract.save();
+
+  // push latest address to cache
+  pushToCachedEntities(args.pool);
 };

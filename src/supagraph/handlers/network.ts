@@ -177,15 +177,14 @@ export const TransactionHandler = async (
   _: unknown,
   { tx, block }: { tx: TransactionReceipt & TransactionResponse; block: Block }
 ) => {
-  const cached = getCachedEntities();
-  const cachedContractAddresses = cached.map((c) => c.id);
+  const cachedContractAddresses = getCachedEntities();
   const fromContract = cachedContractAddresses.find(
     (c: string) => c === tx.from
   );
   const toContract = cachedContractAddresses.find((c: string) => c === tx.to);
 
-  console.log({ fromContract, toContract });
-
+  console.log({ fromContract, toContract, cachedContractAddresses });
+  // TODO: don't set it here, push to queue and do it later
   if (fromContract || toContract) {
     // add txn count
     const poolAddress = fromContract || toContract;
