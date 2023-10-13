@@ -59,10 +59,9 @@ export const config: SyncConfig = {
       // set config from env
       chainId: withDefault(process.env.L2_MANTLE_CHAIN_ID, 5001),
       // establish the point we want to start and stop syncing from
-      startBlock: "latest",
+      startBlock: withDefault(process.env.IZISWAP_FACTORY_START_BLOCK, 6803),
       endBlock: withDefault(process.env.L2_MANTLE_END_BLOCK, "latest"),
       collectTxReceipts: true,
-      mode: "ephemeral",
     },
     iziswapFactory: {
       // set the handlers
