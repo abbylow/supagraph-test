@@ -21,8 +21,6 @@ export const IziswapFactoryHandler = async (
   contract.set("blockNumber", tx.blockNumber);
   contract.set("transactionHash", tx.transactionHash);
 
-  // TODO: push this contract to local kv
-
   // save all changes
   await contract.save();
 };

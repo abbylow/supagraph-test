@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Import the sync command and db drivers to setup engine
-import { DB, Mongo, Stage, SyncConfig, setEngine, sync } from "supagraph";
+import { DB, Mongo, SyncConfig, getEngine, setEngine, sync } from "supagraph";
 
 // Import mongodb client
 import { getMongodb } from "@providers/mongoClient";
@@ -13,10 +13,26 @@ import { handlers } from "@supagraph/handlers";
 // Import revalidation timings from config
 import { config } from "@supagraph/config";
 
-import { startups } from "../../../supagraph/startup";
+import { startups } from "@supagraph/startup";
+import migrations from "@supagraph/migrations";
 
 // forces the route handler to be dynamic
 export const dynamic = "force-dynamic";
+
+let cacheContractEntities = [];
+
+export const cacheEntities = async () => {
+  // get the engine to manipulate the db store
+  const engine = await getEngine();
+
+  // pull the full list of delegates - this will trigger a snapshot on the immutable table
+  cacheContractEntities = (await engine.db.get("contract")) || [];
+
+  // mark as warm (this will prevent
+  return cacheContractEntities;
+};
+
+export const getCachedEntities = () => cacheContractEntities;
 
 // construct the sync call
 const syncLogic = async () => {
@@ -54,8 +70,8 @@ const syncLogic = async () => {
     // insert config and handlers via sync (this will be merged with in memory syncs)
     config,
     handlers,
-    // TODO: add migrations here
-    // // setup the imported migrations
+    // TODO: setup migration
+    // setup the imported migrations
     // migrations: await migrations(),
     // construct error handler to exit the process on error
     onError: async (e, close) => {
@@ -81,13 +97,6 @@ const syncLogic = async () => {
 
 // Expose the sync command on a route so that we can call it with a cron job
 export async function GET(request: NextRequest) {
-  // set the start stage of the sync ("events", "blocks", "transactions", "sort", "process")
-  const start =
-    (request.nextUrl.searchParams.get("start") as keyof typeof Stage) || false;
-  // set the stop stage of the sync ("events", "blocks", "transactions", "sort", "process")
-  const stop =
-    (request.nextUrl.searchParams.get("stop") as keyof typeof Stage) || false;
-
   // all new events discovered from all sync operations detailed in a summary
   const summary = await syncLogic();
 

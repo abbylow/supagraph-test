@@ -15,9 +15,11 @@ import { Store, enqueuePromise, withDefault } from "supagraph";
 
 // Import outer config to pull provider dets
 import { config } from "@supagraph/config";
+import { ContractEntity } from "@supagraph/types";
+import { getCachedEntities } from "@app/graphql/sync/route";
 
 // Import types for defined entities
-import type { DelegateEntity } from "@supagraph/types";
+// import type { DelegateEntity } from "@supagraph/types";
 
 // construct the provider once
 const provider = new JsonRpcProvider(
@@ -175,12 +177,36 @@ export const TransactionHandler = async (
   _: unknown,
   { tx, block }: { tx: TransactionReceipt & TransactionResponse; block: Block }
 ) => {
-  // console.log("transfer: from", args.from, "to", args.to, "for", args.value.toString());
-  // update sender (if they are delegating)
-  await enqueueTransactionHandler(tx.from, tx, block, 0);
+  const cached = getCachedEntities();
+  const cachedContractAddresses = cached.map((c) => c.id);
+  const fromContract = cachedContractAddresses.find(
+    (c: string) => c === tx.from
+  );
+  const toContract = cachedContractAddresses.find((c: string) => c === tx.to);
 
-  // update the recipient (if they are delegating)
-  if (tx.to) await enqueueTransactionHandler(tx.to, tx, block, 1);
+  console.log({ fromContract, toContract });
+
+  if (fromContract || toContract) {
+    // add txn count
+    const poolAddress = fromContract || toContract;
+    const contract = await Store.get<ContractEntity>("Contract", poolAddress);
+    const currentTxnCount = contract.txnCount;
+    // TODO: BigNumberish addition
+    contract.set("txnCount", currentTxnCount + 1);
+    contract.set("blockNumber", tx.blockNumber);
+    contract.set("transactionHash", tx.transactionHash);
+
+    // save all changes
+    await contract.save();
+  }
+
+  // if (tx.to === contractAdresss) ContractAddressEntity.set("counter", ContractAddressEntity.counter + 1);
+
+  // update sender (if they are delegating)
+  // await enqueueTransactionHandler(tx.from, tx, block, 0);
+
+  // // update the recipient (if they are delegating)
+  // if (tx.to) await enqueueTransactionHandler(tx.to, tx, block, 1);
 };
 
 // after enqueueing to process async pieces - process the items in order

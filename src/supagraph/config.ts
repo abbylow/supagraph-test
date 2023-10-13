@@ -25,7 +25,7 @@ export const config: SyncConfig = {
   // flag mutable to insert by upsert only on id field (mutate entities)
   // - otherwise use _block_number + id to make a unique entry and do a distinct groupBy on the id when querying
   //   ie: do everything the immutable way (this can be a lot more expensive)
-  mutable: false,
+  mutable: true,
   // how often do we want queries to be revalidated?
   revalidate: 12,
   staleWhileRevalidate: 59,
@@ -37,7 +37,7 @@ export const config: SyncConfig = {
     5: {
       rpcUrl: `https://goerli.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`,
     },
-    [process.env.L2_MANTLE_CHAIN_ID]: {
+    [withDefault(process.env.L2_MANTLE_CHAIN_ID, 5001)]: {
       rpcUrl: withDefault(
         process.env.MANTLE_RPC_URI,
         "https://rpc.testnet.mantle.xyz"
@@ -51,6 +51,19 @@ export const config: SyncConfig = {
   },
   // configure available Contracts and their block details
   contracts: {
+    [withDefault(process.env.L2_MANTLE_CHAIN_ID, 5001)]: {
+      // set the handlers
+      handlers: `${withDefault(process.env.L2_MANTLE_CHAIN_ID, 5001)}`,
+      // Establish all event signatures available on this contract (we could also accept a .sol or .json file here)
+      eventName: "onTransaction",
+      // set config from env
+      chainId: withDefault(process.env.L2_MANTLE_CHAIN_ID, 5001),
+      // establish the point we want to start and stop syncing from
+      startBlock: "latest",
+      endBlock: withDefault(process.env.L2_MANTLE_END_BLOCK, "latest"),
+      collectTxReceipts: true,
+      mode: "ephemeral",
+    },
     iziswapFactory: {
       // set the handlers
       handlers: "iziswapFactory",
